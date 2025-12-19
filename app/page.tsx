@@ -174,7 +174,7 @@ function HomeContent() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 relative z-10">
-          <div className="max-w-[800px] mx-auto">
+          <div className="max-w-[800px] mx-auto pb-24">
             <Chat
               messages={messages}
               onQuickQuestion={handleQuickQuestion}
