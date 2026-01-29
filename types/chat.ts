@@ -9,4 +9,5 @@ export interface SavedChat {
   messages: ChatMessage[];
   createdAt: string;
   updatedAt: string;
+  tripId?: string;
 }

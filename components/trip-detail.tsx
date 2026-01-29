@@ -2,16 +2,25 @@
 
 import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useRouter } from 'next/navigation';
 import { Trip } from '@/types/trip';
+import { SavedChat } from '@/types/chat';
 
 interface TripDetailProps {
   trip: Trip;
   onClose: () => void;
   onDelete: () => void;
+  linkedChat?: SavedChat;
 }
 
-export default function TripDetail({ trip, onClose, onDelete }: TripDetailProps) {
-  // Close on Escape key
+export default function TripDetail({
+  trip,
+  onClose,
+  onDelete,
+  linkedChat,
+}: TripDetailProps) {
+  const router = useRouter();
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -20,13 +29,19 @@ export default function TripDetail({ trip, onClose, onDelete }: TripDetailProps)
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  // Prevent body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  const handleViewChat = () => {
+    if (linkedChat) {
+      router.push(`/?load=${linkedChat.id}`);
+      onClose();
+    }
+  };
 
   const handleDelete = () => {
     if (confirm('Are you sure you want to delete this trip?')) {
@@ -136,18 +151,22 @@ export default function TripDetail({ trip, onClose, onDelete }: TripDetailProps)
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-[#e8e4dc] px-6 py-4 flex justify-end gap-3">
+        <div className="sticky bottom-0 bg-white border-t border-[#e8e4dc] px-6 py-4 flex justify-between items-center">
+          {linkedChat ? (
+            <button
+              onClick={handleViewChat}
+              className="px-5 py-2.5 border border-[#7c9885] text-[#7c9885] rounded-xl text-[14px] font-medium transition-all hover:bg-[#7c9885] hover:text-white cursor-pointer flex items-center gap-2"
+            >
+              💬 View chat
+            </button>
+          ) : (
+            <div />
+          )}
           <button
             onClick={handleDelete}
             className="px-5 py-2.5 text-red-600 border border-red-200 rounded-xl text-[14px] font-medium transition-all hover:bg-red-50 cursor-pointer"
           >
             Delete trip
-          </button>
-          <button
-            onClick={onClose}
-            className="px-5 py-2.5 bg-[#7c9885] text-white rounded-xl text-[14px] font-medium transition-all hover:bg-[#6a8573] cursor-pointer"
-          >
-            Close
           </button>
         </div>
       </div>

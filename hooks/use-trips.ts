@@ -19,21 +19,24 @@ export function useTrips() {
   // Lazy initialization from localStorage
   const [trips, setTrips] = useState<Trip[]>(() => loadTripsFromStorage());
 
-  const saveTrip = useCallback((trip: Omit<Trip, 'id' | 'createdAt'>) => {
-    const newTrip: Trip = {
-      ...trip,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-    };
+  const saveTrip = useCallback((tripData: Omit<Trip, 'id' | 'createdAt'>) => {
+    const existing = tripData.chatId
+      ? trips.find((t) => t.chatId === tripData.chatId)
+      : null;
 
-    setTrips((prev) => {
-      const updated = [newTrip, ...prev];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
+    const trip: Trip = existing
+      ? { ...existing, ...tripData }
+      : { ...tripData, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
 
-    return newTrip;
-  }, []);
+    const updated = existing
+      ? trips.map((t) => (t.id === existing.id ? trip : t))
+      : [trip, ...trips];
+
+    setTrips(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    return trip;
+  }, [trips]);
 
   const deleteTrip = useCallback((id: string) => {
     setTrips((prev) => {
@@ -48,11 +51,17 @@ export function useTrips() {
     [trips]
   );
 
+  const getTripByChatId = useCallback(
+    (chatId: string) => trips.find((trip) => trip.chatId === chatId),
+    [trips]
+  );
+
   return {
     trips,
     isLoaded: true,
     saveTrip,
     deleteTrip,
     getTripById,
+    getTripByChatId,
   };
 }

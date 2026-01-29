@@ -39,14 +39,12 @@ export function useSavedChats() {
       let updated: SavedChat[];
 
       if (existingId) {
-        // Update existing chat
         updated = prev.map((chat) =>
           chat.id === existingId
             ? { ...chat, messages, title: generateTitle(messages), updatedAt: now }
             : chat
         );
       } else {
-        // Create new chat
         const newChat: SavedChat = {
           id: chatId,
           title: generateTitle(messages),
@@ -77,10 +75,21 @@ export function useSavedChats() {
     [chats]
   );
 
+  const linkTripToChat = useCallback((chatId: string, tripId: string) => {
+    setChats((prev) => {
+      const updated = prev.map((chat) =>
+        chat.id === chatId ? { ...chat, tripId } : chat
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   return {
     chats,
     saveChat,
     deleteChat,
     getChatById,
+    linkTripToChat,
   };
 }

@@ -6,31 +6,19 @@ interface ChatCardProps {
   chat: SavedChat;
   onClick: () => void;
   onDelete: () => void;
+  onViewTrip?: () => void;
 }
 
-function formatDate(dateString: string): string {
+const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+};
 
-  if (diffDays === 0) {
-    return 'Today';
-  } else if (diffDays === 1) {
-    return 'Yesterday';
-  } else if (diffDays < 7) {
-    return `${diffDays} days ago`;
-  } else {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-    });
-  }
-}
-
-export default function ChatCard({ chat, onClick, onDelete }: ChatCardProps) {
-  const messageCount = chat.messages.length;
+export default function ChatCard({ chat, onClick, onDelete, onViewTrip }: ChatCardProps) {
   const lastMessage = chat.messages[chat.messages.length - 1];
   const preview = lastMessage?.content.slice(0, 100) + (lastMessage?.content.length > 100 ? '...' : '');
 
@@ -39,6 +27,11 @@ export default function ChatCard({ chat, onClick, onDelete }: ChatCardProps) {
     if (confirm('Delete this chat?')) {
       onDelete();
     }
+  };
+
+  const handleViewTrip = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onViewTrip?.();
   };
 
   return (
@@ -70,9 +63,19 @@ export default function ChatCard({ chat, onClick, onDelete }: ChatCardProps) {
         {preview}
       </p>
 
-      <div className="flex items-center justify-between text-[13px] text-gray-400">
-        <span>{messageCount} messages</span>
-        <span>{formatDate(chat.updatedAt)}</span>
+      {/* Footer */}
+      <div className="mt-4 pt-4 border-t border-[#e8e4dc] flex items-center justify-between text-[13px] text-gray-400">
+        <span className="text-[12px] text-gray-400">
+          {formatDate(chat.createdAt)}
+        </span>
+        {chat.tripId && onViewTrip && (
+            <button
+              onClick={handleViewTrip}
+              className="px-2 py-0.5 bg-[#e8f5e9] text-[#2e7d32] text-[11px] rounded-full flex items-center gap-1 hover:bg-[#c8e6c9] transition-colors cursor-pointer"
+            >
+              🎒 View trip
+            </button>
+          )}
       </div>
     </div>
   );
