@@ -9,7 +9,7 @@ function asItinerary(itinerary: any): ParsedItinerary | null {
   let transport = '';
   let accommodation = '';
   const highlights = [];
-  const steps = (itinerary.steps || []).filter((step) => !!step).sort(sortStepsByEta);
+  const steps = (itinerary.steps || []).filter((step: any) => !!step).sort(sortStepsByEta);
   for (const step of steps) {
      switch (step.type || '') {
        case 'transit':
@@ -52,12 +52,11 @@ export function parseItinerary(content: string): ParsedItinerary | null {
     const destination = extractDestination(content);
     if (!destination) return null;
 
-    const dates = parsed.dates;
     const dateRange = extractDates(content);
     const transport = extractSection(content, ['Transporte', 'Transport', 'Vuelos', 'Flights']);
     const accommodation = extractSection(content, ['Alojamiento', 'Accommodation', 'Hotel']);
     const highlights = extractHighlights(content);
-    const budget = parsed.budget || extractBudget(content);
+    const budget = extractBudget(content);
 
     return {
       destination,
@@ -218,7 +217,7 @@ export function findItineraryMessage(
  */
 export function parseDateRange(dateRange: string | undefined): { start: string; end: string } {
   // Try to extract start and end from patterns like "8 al 11 de Enero"
-  const match = dateRange.match(/(\d{1,2})\s*(?:al|a|-)\s*(\d{1,2})\s*(?:de\s+)?(\w+)/i);
+  const match = dateRange && dateRange.match(/(\d{1,2})\s*(?:al|a|-)\s*(\d{1,2})\s*(?:de\s+)?(\w+)/i);
   if (match) {
     const [, startDay, endDay, month] = match;
     return {
@@ -227,15 +226,18 @@ export function parseDateRange(dateRange: string | undefined): { start: string; 
     };
   }
 
-  return { start: dateRange, end: '' };
+  return { start: dateRange || '', end: '' };
 }
 
 /**
  * Calculate duration from date range.
  */
-export function calculateDuration(dateRange: any): string {
+export function calculateDuration(dateRange?: any): string {
+  if (!dateRange) {
+    return '';
+  }
   if (dateRange.start && dateRange.end) {
-    const days = Math.ceil((new Date(dateRange.end) - new Date(dateRange.start)) / 86400000);
+    const days = Math.ceil((new Date(dateRange.end).valueOf() - new Date(dateRange.start).valueOf()) / 86400000);
     return `${days} ${days === 1 ? 'day' : 'days'}`;
   }
   if (typeof dateRange === 'string') {

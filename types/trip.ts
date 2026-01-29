@@ -5,7 +5,7 @@ export interface Trip {
     start: string;
     end: string;
   };
-  duration: string;
+  duration?: string;
   transport: string;
   accommodation: string;
   highlights: string[];
