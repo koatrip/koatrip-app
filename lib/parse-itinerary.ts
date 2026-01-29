@@ -216,7 +216,7 @@ export function findItineraryMessage(
 /**
  * Parse date range string to start/end dates.
  */
-export function parseDateRange(dateRange: string): { start: string; end: string } {
+export function parseDateRange(dateRange: string | undefined): { start: string; end: string } {
   // Try to extract start and end from patterns like "8 al 11 de Enero"
   const match = dateRange.match(/(\d{1,2})\s*(?:al|a|-)\s*(\d{1,2})\s*(?:de\s+)?(\w+)/i);
   if (match) {
