@@ -141,8 +141,8 @@ function HomeContent() {
     if (itineraryToSave) {
       const parsed = parseItinerary(itineraryToSave);
       if (parsed) {
-        const dates = parseDateRange(parsed.dateRange);
-        const duration = calculateDuration(parsed.dateRange);
+        const dates = parsed.dates || parseDateRange(parsed.dateRange);
+        const duration = calculateDuration(dates || parsed.dateRange);
 
         saveTrip({
           destination: parsed.destination,

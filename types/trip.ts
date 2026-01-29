@@ -16,7 +16,11 @@ export interface Trip {
 
 export interface ParsedItinerary {
   destination: string;
-  dateRange: string;
+  dates?: {
+    start: string;
+    end: string;
+  };
+  dateRange?: string;
   transport: string;
   accommodation: string;
   highlights: string[];

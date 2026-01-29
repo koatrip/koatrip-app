@@ -1,18 +1,63 @@
 import { ParsedItinerary } from '@/types/trip';
 
+function sortStepsByEta(a: any, b: any): any {
+  return new Date(a.eta).getTime() < new Date(b.eta).getTime() ? -1 : 1;
+}
+
+function asItinerary(itinerary: any): ParsedItinerary | null {
+  // FIXME What if the trip spans many cities and/or vast distances?
+  let transport = '';
+  let accommodation = '';
+  const highlights = [];
+  const steps = (itinerary.steps || []).filter((step) => !!step).sort(sortStepsByEta);
+  for (const step of steps) {
+     switch (step.type || '') {
+       case 'transit':
+         if (!transport) {
+           transport = step.title;
+         }
+         break;
+       case 'accommodation':
+         if (!accommodation) {
+           accommodation = step.title;
+         }
+         break;
+       default:
+         highlights.push(step.title);
+         break;
+     }
+  }
+  return {
+    destination: itinerary.destination,
+    dates: itinerary.dates,
+    transport: transport,
+    accommodation: accommodation,
+    highlights: highlights,
+    budget: itinerary.budget
+  } as any as ParsedItinerary;
+}
+
 /**
  * Parse an itinerary message from the assistant to extract structured data.
  */
 export function parseItinerary(content: string): ParsedItinerary | null {
   try {
+    const parsed = JSON.parse(content);
+    return asItinerary(parsed);
+  } catch (error) {
+    console.error('Error parsing itinerary as JSON: ', error);
+  }
+
+  try {
     const destination = extractDestination(content);
     if (!destination) return null;
 
+    const dates = parsed.dates;
     const dateRange = extractDates(content);
     const transport = extractSection(content, ['Transporte', 'Transport', 'Vuelos', 'Flights']);
     const accommodation = extractSection(content, ['Alojamiento', 'Accommodation', 'Hotel']);
     const highlights = extractHighlights(content);
-    const budget = extractBudget(content);
+    const budget = parsed.budget || extractBudget(content);
 
     return {
       destination,
@@ -188,11 +233,17 @@ export function parseDateRange(dateRange: string): { start: string; end: string 
 /**
  * Calculate duration from date range.
  */
-export function calculateDuration(dateRange: string): string {
-  const match = dateRange.match(/(\d{1,2})\s*(?:al|a|-)\s*(\d{1,2})/);
-  if (match) {
-    const days = parseInt(match[2]) - parseInt(match[1]) + 1;
+export function calculateDuration(dateRange: any): string {
+  if (dateRange.start && dateRange.end) {
+    const days = Math.ceil((new Date(dateRange.end) - new Date(dateRange.start)) / 86400000);
     return `${days} ${days === 1 ? 'day' : 'days'}`;
+  }
+  if (typeof dateRange === 'string') {
+    const match = dateRange.match(/(\d{1,2})\s*(?:al|a|-)\s*(\d{1,2})/);
+    if (match) {
+      const days = parseInt(match[2]) - parseInt(match[1]) + 1;
+      return `${days} ${days === 1 ? 'day' : 'days'}`;
+    }
   }
   return '';
 }
