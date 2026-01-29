@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
-const SYSTEM_PROMPT = `Hoy es ${Date.now()}. Eres Koatrip, un asistente de viajes experto y amigable. Tu misión es ayudar a los usuarios a planificar viajes inolvidables.
+const SYSTEM_PROMPT = `Eres Koatrip, un asistente de viajes experto y amigable. Tu misión es ayudar a los usuarios a planificar viajes inolvidables.
 
 ## Tu Personalidad
 - Eres entusiasta pero profesional
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: `Hoy es ${Date.now()}.` + SYSTEM_PROMPT,
     });
 
     const history = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({
