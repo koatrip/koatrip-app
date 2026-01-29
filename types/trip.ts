@@ -12,6 +12,7 @@ export interface Trip {
   budget: string;
   fullItinerary: string;
   createdAt: string;
+  chatId?: string;
 }
 
 export interface ParsedItinerary {

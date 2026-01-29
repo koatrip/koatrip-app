@@ -2,14 +2,18 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
 import TripCard from '@/components/trip-card';
 import TripDetail from '@/components/trip-detail';
 import { useTrips } from '@/hooks/use-trips';
+import { useSavedChats } from '@/hooks/use-saved-chats';
 import { Trip } from '@/types/trip';
 
 export default function MyTripsPage() {
+  const router = useRouter();
   const { trips, isLoaded, deleteTrip } = useTrips();
+  const { getChatById } = useSavedChats();
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 
   if (!isLoaded) {
@@ -76,6 +80,7 @@ export default function MyTripsPage() {
                   trip={trip}
                   onClick={() => setSelectedTrip(trip)}
                   onDelete={() => deleteTrip(trip.id)}
+                  onViewChat={trip.chatId ? () => router.push(`/?load=${trip.chatId}`) : undefined}
                 />
               ))}
             </div>
@@ -91,6 +96,7 @@ export default function MyTripsPage() {
               deleteTrip(selectedTrip.id);
               setSelectedTrip(null);
             }}
+            linkedChat={selectedTrip.chatId ? getChatById(selectedTrip.chatId) : undefined}
           />
         )}
       </main>

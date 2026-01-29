@@ -21,8 +21,8 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const [message, setMessage] = useState('');
   const { messages, isLoading, error, sendMessage, retryMessage, clearMessages, loadMessages } = useChat();
-  const { saveTrip } = useTrips();
-  const { saveChat, getChatById } = useSavedChats();
+  const { saveTrip, getTripByChatId } = useTrips();
+  const { saveChat, getChatById, linkTripToChat } = useSavedChats();
   const [itineraryToSave, setItineraryToSave] = useState<string | null>(null);
   const [tripSaved, setTripSaved] = useState(false);
   const [lastProcessedLength, setLastProcessedLength] = useState(0);
@@ -144,7 +144,11 @@ function HomeContent() {
         const dates = parseDateRange(parsed.dateRange);
         const duration = calculateDuration(parsed.dateRange);
 
-        saveTrip({
+        // Check if this is a new trip (for linking purposes)
+        const isNewTrip = currentChatId ? !getTripByChatId(currentChatId) : true;
+
+        // Upsert trip (creates or updates based on chatId)
+        const trip = saveTrip({
           destination: parsed.destination,
           dates,
           duration: duration || parsed.dateRange,
@@ -153,7 +157,13 @@ function HomeContent() {
           highlights: parsed.highlights,
           budget: parsed.budget,
           fullItinerary: itineraryToSave,
+          chatId: currentChatId || undefined,
         });
+
+        // Link the chat to the trip (only for new trips)
+        if (isNewTrip && currentChatId && trip) {
+          linkTripToChat(currentChatId, trip.id);
+        }
 
         setTripSaved(true);
         setItineraryToSave(null);

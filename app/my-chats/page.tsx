@@ -1,17 +1,32 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/sidebar';
 import ChatCard from '@/components/chat-card';
+import TripDetail from '@/components/trip-detail';
 import { useSavedChats } from '@/hooks/use-saved-chats';
+import { useTrips } from '@/hooks/use-trips';
+import { Trip } from '@/types/trip';
 
 export default function MyChatsPage() {
-  const { chats, deleteChat } = useSavedChats();
+  const { chats, deleteChat, getChatById } = useSavedChats();
+  const { getTripById, deleteTrip } = useTrips();
   const router = useRouter();
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
 
   const handleChatClick = (chatId: string) => {
     router.push(`/?load=${chatId}`);
+  };
+
+  const handleViewTrip = (tripId: string, chatId: string) => {
+    const trip = getTripById(tripId);
+    if (trip) {
+      setSelectedTrip(trip);
+      setSelectedChatId(chatId);
+    }
   };
 
   return (
@@ -66,11 +81,29 @@ export default function MyChatsPage() {
                   chat={chat}
                   onClick={() => handleChatClick(chat.id)}
                   onDelete={() => deleteChat(chat.id)}
+                  onViewTrip={chat.tripId ? () => handleViewTrip(chat.tripId!, chat.id) : undefined}
                 />
               ))}
             </div>
           )}
         </div>
+
+        {/* Trip detail modal */}
+        {selectedTrip && (
+          <TripDetail
+            trip={selectedTrip}
+            onClose={() => {
+              setSelectedTrip(null);
+              setSelectedChatId(null);
+            }}
+            onDelete={() => {
+              deleteTrip(selectedTrip.id);
+              setSelectedTrip(null);
+              setSelectedChatId(null);
+            }}
+            linkedChat={selectedChatId ? getChatById(selectedChatId) : undefined}
+          />
+        )}
       </main>
     </div>
   );

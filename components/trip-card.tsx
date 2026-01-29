@@ -6,14 +6,20 @@ interface TripCardProps {
   trip: Trip;
   onClick: () => void;
   onDelete: () => void;
+  onViewChat?: () => void;
 }
 
-export default function TripCard({ trip, onClick, onDelete }: TripCardProps) {
+export default function TripCard({ trip, onClick, onDelete, onViewChat }: TripCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this trip?')) {
       onDelete();
     }
+  };
+
+  const handleViewChat = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onViewChat?.();
   };
 
   const formatDate = (dateString: string) => {
@@ -103,11 +109,16 @@ export default function TripCard({ trip, onClick, onDelete }: TripCardProps) {
       {/* Footer */}
       <div className="mt-4 pt-4 border-t border-[#e8e4dc] flex justify-between items-center">
         <span className="text-[12px] text-gray-400">
-          Saved {formatDate(trip.createdAt)}
+          {formatDate(trip.createdAt)}
         </span>
-        <span className="text-[#7c9885] text-[13px] font-medium">
-          View details →
-        </span>
+        {trip.chatId && onViewChat && (
+          <button
+            onClick={handleViewChat}
+            className="px-2 py-0.5 bg-[#e8f5e9] text-[#2e7d32] text-[11px] rounded-full flex items-center gap-1 hover:bg-[#c8e6c9] transition-colors cursor-pointer"
+          >
+            💬 View chat
+          </button>
+        )}
       </div>
     </div>
   );
