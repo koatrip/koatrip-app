@@ -241,3 +241,4 @@ className="hover:bg-koala-eucalyptus hover:text-white"
 ---
 
 Questions? The code is ready to use. Let's build Koatrip! 🐨✈️
+
