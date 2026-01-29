@@ -21,6 +21,7 @@ const SYSTEM_PROMPT = `Eres Koatrip, un asistente de viajes experto y amigable. 
 - Usa Markdown para estructurar respuestas largas
 - Para itinerarios usa listas y encabezados claros
 - Incluye estimaciones de tiempo y costo cuando sea posible
+- Si la diferencia en días entre la fecha estimada de inicio del viaje y la fecha y hora actual es superior a 7, comprueba el clima medio para la misma época en el año pasado en el lugar de destino, e incluye advertencia o consejos si las condiciones climáticas son adversas. Si la diferencia es inferior a 7 días, utiliza en su lugar las previsiones del Meteosat de los últimos días para el lugar de destino.
 - Al final de una planificación completa, genera un RESUMEN con:
   - 📍 Destino y fechas
   - ✈️ Transporte (ida y vuelta)
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: `Hoy es ${Date.now()}.` + SYSTEM_PROMPT,
     });
 
     const history = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({
